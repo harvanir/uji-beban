@@ -3,10 +3,8 @@ package org.harvanir.ujibeban.loadtest;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
 import lombok.extern.slf4j.Slf4j;
 import org.harvanir.ujibeban.gateway.Gateway;
-import org.reactivestreams.Publisher;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -33,54 +31,58 @@ public class LoadTestController {
       @RequestParam(name = "virtualUser") Integer virtualUser,
       @RequestParam(name = "duration") Integer duration) {
     AtomicInteger counter = new AtomicInteger(0);
-    return load(virtualUser, duration, counter);
-  }
-
-  private Mono<byte[]> load(Integer virtualUser, Integer duration, AtomicInteger counter) {
-    LocalDateTime start = LocalDateTime.now();
-    AtomicInteger loopCounter = new AtomicInteger(0);
-
-    return Flux.generate(
-            (SynchronousSink<Integer> sink) -> {
-              boolean timeOut = ChronoUnit.SECONDS.between(start, LocalDateTime.now()) >= duration;
-
-              if (timeOut) {
-                sink.complete();
-              } else {
-                int current = loopCounter.get();
-                log(current);
-
-                if (current < virtualUser) {
-                  counter.incrementAndGet();
-
-                  current = loopCounter.incrementAndGet();
-                  sink.next(current);
-                } else {
-                  sink.next(SKIP);
-                }
-              }
-            })
-        .flatMap(dispatch(loopCounter))
+    return RequestPerDurationGenerator.generate(virtualUser, duration)
+        .doOnNext(integer -> counter.incrementAndGet())
+        .flatMap(integer -> gateway.call())
         .then(constructResponse(counter));
-  }
-
-  private Function<Integer, Publisher<String>> dispatch(AtomicInteger loopCounter) {
-    return data -> {
-      if (data.equals(SKIP)) {
-        return Mono.empty();
-      }
-
-      return gateway.call().doOnNext(s -> loopCounter.getAndDecrement());
-    };
-  }
-
-  private void log(int value) {
-    if (value < 0) {
-      log.warn("invalid number: {}", value);
-    }
   }
 
   private Mono<byte[]> constructResponse(AtomicInteger counter) {
     return Mono.fromSupplier(() -> String.format("Total request: %s", counter.get()).getBytes());
+  }
+
+  static class RequestPerDurationGenerator {
+
+    private RequestPerDurationGenerator() {}
+
+    public static Flux<Integer> generate(int virtualUser, int duration) {
+      LocalDateTime start = LocalDateTime.now();
+      AtomicInteger loopCounter = new AtomicInteger(0);
+
+      return Flux.generate(
+              (SynchronousSink<Integer> sink) -> {
+                boolean timeOut =
+                    ChronoUnit.SECONDS.between(start, LocalDateTime.now()) >= duration;
+
+                if (timeOut) {
+                  sink.complete();
+                } else {
+                  int current = loopCounter.get();
+                  log(current);
+
+                  if (current < virtualUser) {
+                    current = loopCounter.incrementAndGet();
+                    sink.next(current);
+                  } else {
+                    sink.next(SKIP);
+                  }
+                }
+              })
+          .flatMap(
+              data -> {
+                if (!data.equals(SKIP)) {
+                  loopCounter.getAndDecrement();
+                  return Flux.just(data);
+                }
+
+                return Flux.empty();
+              });
+    }
+
+    private static void log(int value) {
+      if (value < 0) {
+        log.warn("invalid number: {}", value);
+      }
+    }
   }
 }
