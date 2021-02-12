@@ -1,0 +1,3 @@
+#!/bin/sh
+./mvnw -pl :code-formatter-maven-plugin -am clean install
+./mvnw org.harvanir.ujibeban:code-formatter-maven-plugin:0.0.1-SNAPSHOT:install-pre-commit
