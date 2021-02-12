@@ -1,0 +1,11 @@
+info:
+  app:
+    name: ${spring.application.name}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: info,health,prometheus
+spring:
+  application:
+    name: uji-beban
