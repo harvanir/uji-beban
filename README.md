@@ -23,3 +23,9 @@
 ```shell
 ./cmd-build
 ```
+
+### Run application
+
+```shell
+./cmd-run
+```

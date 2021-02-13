@@ -1,0 +1,2 @@
+#!/bin/sh
+java -server -Xmx256m -Dreactor.netty.pool.maxConnections=10000 -jar ujibeban-app/target/ujibeban-app-0.0.1-SNAPSHOT.jar
