@@ -30,7 +30,7 @@ public class LoadTestController {
         gateway
             .call()
             .doOnNext(v -> counter.incrementAndGet())
-            .doOnCancel(() -> log.error("canceled"))
+            .doOnCancel(() -> log.warn("canceled"))
             .doOnError(
                 e -> {
                   log.error("error", e);
