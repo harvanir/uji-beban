@@ -12,11 +12,11 @@ import reactor.core.publisher.SynchronousSink;
 
 /** @author Harvan Irsyadi */
 @Slf4j
-public class RequestPerDurationGenerator {
+public class RequestPerSecondGenerator {
 
   private static final int SKIP = -1;
 
-  private RequestPerDurationGenerator() {}
+  private RequestPerSecondGenerator() {}
 
   private static boolean isTimeout(LocalDateTime start, int duration) {
     return ChronoUnit.SECONDS.between(start, LocalDateTime.now()) >= duration;

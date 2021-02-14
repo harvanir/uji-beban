@@ -18,4 +18,9 @@ public class BaseController {
   public Mono<byte[]> base() {
     return Mono.fromSupplier(() -> random.nextInt(9999)).map(v -> String.valueOf(v).getBytes());
   }
+
+  @GetMapping(value = "/base2", produces = MediaType.TEXT_PLAIN_VALUE)
+  public Mono<byte[]> base2() {
+    return base();
+  }
 }

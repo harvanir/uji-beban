@@ -17,6 +17,7 @@
         <fmt-maven-plugin.version>2.9.1</fmt-maven-plugin.version>
         <google-java-format.version>1.9</google-java-format.version>
         <java.version>1.8</java.version>
+        <jmh-vesion>1.26</jmh-vesion>
         <maven-plugin-annotations.version>3.6.0</maven-plugin-annotations.version>
         <maven-plugin-api.version>3.6.3</maven-plugin-api.version>
         <maven-plugin-plugin.version>3.6.0</maven-plugin-plugin.version>
