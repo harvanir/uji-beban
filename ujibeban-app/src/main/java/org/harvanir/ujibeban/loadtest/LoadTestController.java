@@ -2,7 +2,7 @@ package org.harvanir.ujibeban.loadtest;
 
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.extern.slf4j.Slf4j;
-import org.harvanir.ujibeban.core.RequestPerDurationGenerator;
+import org.harvanir.ujibeban.core.RequestPerSecondGenerator;
 import org.harvanir.ujibeban.gateway.Gateway;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,7 +36,7 @@ public class LoadTestController {
                   log.error("error", e);
                   counter.incrementAndGet();
                 });
-    return RequestPerDurationGenerator.of(virtualUser, duration, callback)
+    return RequestPerSecondGenerator.of(virtualUser, duration, callback)
         .then()
         .then(constructResponse(counter));
   }

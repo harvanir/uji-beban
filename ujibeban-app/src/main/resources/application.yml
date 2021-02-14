@@ -9,5 +9,3 @@ management:
 spring:
   application:
     name: uji-beban
-  config:
-    import: file:./user-config.yml

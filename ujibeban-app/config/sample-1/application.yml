@@ -1,0 +1,8 @@
+uji-beban:
+  requests:
+    base:
+      method: get
+      path: http://localhost:8080/base
+    base2:
+      method: get
+      path: http://localhost:8080/base2

@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
 
 /** @author Harvan Irsyadi */
-class RequestPerDurationGeneratorTest {
+class RequestPerSecondGeneratorTest {
 
   @Test
   void givenTenVirtualUser_whenExecute_thenInvokedTenTimes() {
@@ -16,7 +16,7 @@ class RequestPerDurationGeneratorTest {
     AtomicInteger counter = new AtomicInteger(0);
     Mono<Integer> callback =
         Mono.fromSupplier(counter::incrementAndGet).delayElement(Duration.ofSeconds(1));
-    RequestPerDurationGenerator.of(virtualUser, 1, callback).then().block();
+    RequestPerSecondGenerator.of(virtualUser, 1, callback).then().block();
 
     assertEquals(10, counter.get());
   }
