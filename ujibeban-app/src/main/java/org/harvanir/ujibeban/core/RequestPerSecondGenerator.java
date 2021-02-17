@@ -6,9 +6,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.FluxSink;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.ParallelFlux;
 import reactor.core.publisher.SynchronousSink;
+import reactor.core.scheduler.Schedulers;
 
 /** @author Harvan Irsyadi */
 @Slf4j
@@ -25,9 +27,14 @@ public class RequestPerSecondGenerator {
   public static <T> ParallelFlux<T> of(int virtualUser, int duration, Mono<T> callback) {
     AtomicInteger loopCounter = new AtomicInteger(0);
 
-    return Flux.generate(getSink(virtualUser, duration, loopCounter))
+    return generate(virtualUser, duration, loopCounter)
+        .subscribeOn(Schedulers.parallel())
         .parallel(virtualUser)
         .flatMap(emit -> dispatchCallback(emit, callback, loopCounter));
+  }
+
+  private static Flux<Integer> generate(int virtualUser, int duration, AtomicInteger loopCounter) {
+    return Flux.generate(getSink(virtualUser, duration, loopCounter));
   }
 
   private static Consumer<SynchronousSink<Integer>> getSink(
@@ -39,9 +46,9 @@ public class RequestPerSecondGenerator {
         sink.complete();
       } else {
         int current = loopCounter.get();
-        log(current);
 
         if (current < virtualUser) {
+          log(current);
           sink.next(loopCounter.incrementAndGet());
         } else {
           sink.next(SKIP);
@@ -66,5 +73,35 @@ public class RequestPerSecondGenerator {
     if (value < 0) {
       log.warn("invalid number: {}", value);
     }
+  }
+
+  /** Remove later. */
+  static <T> ParallelFlux<T> ofCreate(int virtualUser, int duration, Mono<T> callback) {
+    AtomicInteger loopCounter = new AtomicInteger(0);
+
+    return create(virtualUser, duration, loopCounter)
+        .subscribeOn(Schedulers.parallel())
+        .parallel(virtualUser)
+        .flatMap(emit -> dispatchCallback(emit, callback, loopCounter));
+  }
+
+  /** As a comparison to method #{generate}, but this method produce memory leaks. */
+  private static Flux<Integer> create(int virtualUser, int duration, AtomicInteger loopCounter) {
+    LocalDateTime start = LocalDateTime.now();
+
+    return Flux.create(
+        sink -> {
+          while (!isTimeout(start, duration)) {
+            int current = loopCounter.get();
+
+            if (current < virtualUser) {
+              log(current);
+              sink.next(loopCounter.incrementAndGet());
+            }
+          }
+
+          sink.complete();
+        },
+        FluxSink.OverflowStrategy.BUFFER);
   }
 }

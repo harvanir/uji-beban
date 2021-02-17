@@ -16,14 +16,14 @@ public class NettyConfiguration {
   public ReactorResourceFactory reactorServerResourceFactory() {
     ReactorResourceFactory resourceFactory = new ReactorResourceFactory();
     resourceFactory.addGlobalResourcesConsumer(
-        httpResources -> HttpResources.set(getHttpConnectionProvider()));
+        httpResources -> HttpResources.set(getHttpConnectionProvider("http")));
 
     return resourceFactory;
   }
 
-  private ConnectionProvider getHttpConnectionProvider() {
-    return ConnectionProvider.builder("http")
-        .pendingAcquireMaxCount(DEFAULT_POOL_MAX_CONNECTIONS)
+  private ConnectionProvider getHttpConnectionProvider(String name) {
+    return ConnectionProvider.builder(name)
+        .pendingAcquireMaxCount(DEFAULT_POOL_MAX_CONNECTIONS * 2)
         .build();
   }
 }

@@ -61,6 +61,7 @@
     </dependencies>
 
     <build>
+        <finalName>ujibeban-app</finalName>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
