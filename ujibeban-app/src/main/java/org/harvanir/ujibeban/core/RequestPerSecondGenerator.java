@@ -28,8 +28,8 @@ public class RequestPerSecondGenerator {
     AtomicInteger loopCounter = new AtomicInteger(0);
 
     return generate(virtualUser, duration, loopCounter)
-        .subscribeOn(Schedulers.parallel())
-        .parallel(virtualUser)
+        .parallel()
+        .runOn(Schedulers.parallel())
         .flatMap(emit -> dispatchCallback(emit, callback, loopCounter));
   }
 
@@ -63,7 +63,8 @@ public class RequestPerSecondGenerator {
       return callback
           .doOnError(e -> log.error("an error occur", e))
           .doOnCancel(() -> log.warn("canceled"))
-          .doFinally(signalType -> loopCounter.decrementAndGet());
+          .doFinally(signalType -> loopCounter.decrementAndGet())
+          .onErrorContinue((e, o) -> log.error("Continuing error of value: {}", o, e));
     }
 
     return Mono.empty();

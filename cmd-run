@@ -1,4 +1,25 @@
 #!/bin/sh
 
-cd ujibeban-app||exit
-java -server -Xmx1g -Dreactor.netty.pool.maxConnections=10000 -jar target/ujibeban-app.jar
+cd ujibeban-app || exit
+java -server \
+  -Xmx1g \
+  -XX:+UseG1GC \
+  -XX:+UseStringDeduplication \
+  -Dreactor.netty.pool.maxConnections=10000 \
+  -Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.local.only=false \
+  -Dcom.sun.management.jmxremote.authenticate=false \
+  -Dcom.sun.management.jmxremote.ssl=false \
+  -Djava.rmi.server.hostname=127.0.0.1 \
+  -Dcom.sun.management.jmxremote.port=7006 \
+  -Dcom.sun.management.jmxremote.rmi.port=7006 \
+  -jar target/ujibeban-app.jar
+#  -XX:+AlwaysPreTouch \
+#  -XX:+ParallelRefProcEnabled \
+#  -XX:MaxTenuringThreshold=1 \
+#  -XX:MaxGCPauseMillis=500 \
+#  -XX:G1HeapWastePercent=2 \
+#  -XX:G1MixedGCCountTarget=8 \
+#  -XX:+UnlockExperimentalVMOptions \
+#  -XX:G1MixedGCLiveThresholdPercent=90 \
+#  -XX:G1NewSizePercent=80 \
+#  -XX:G1MaxNewSizePercent=80 \

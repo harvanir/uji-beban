@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 /** @author Harvan Irsyadi */
 @Slf4j
@@ -30,7 +31,6 @@ public class LoadTestController {
         gateway
             .call()
             .doOnNext(v -> counter.incrementAndGet())
-            .doOnCancel(() -> log.warn("canceled"))
             .doOnError(
                 e -> {
                   log.error("error", e);
@@ -38,6 +38,7 @@ public class LoadTestController {
                 });
     return RequestPerSecondGenerator.of(virtualUser, duration, callback)
         .then()
+        .subscribeOn(Schedulers.single())
         .then(constructResponse(counter));
   }
 
